@@ -28,9 +28,13 @@ jobs:
           npm install -g javascript-obfuscator
           sudo apt-get install -y unzip
 
+      - name: Clean up old files
+        run: |
+          rm -f worker.zip _worker.js origin.js
+
       - name: Download and extract latest BPB worker
         run: |
-          wget https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/download/v3.2.3/worker.zip
+          wget -O worker.zip https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/download/v3.2.3/worker.zip
           unzip -o worker.zip
           mv _worker.js origin.js
 
@@ -53,4 +57,3 @@ jobs:
           branch: main
           commit_message: ':arrow_up: update latest bpb panel'
           commit_author: 'github-actions[bot] <github-actions[bot]@users.noreply.github.com>'
-          push_options: '--set-upstream'
