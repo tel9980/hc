@@ -38,18 +38,14 @@ jobs:
           unzip -o worker.zip
           mv _worker.js origin.js
 
-      - name: Obfuscate BPB worker js
+      - name: Obfuscate BPB worker js (simplified for Cloudflare)
         run: |
           javascript-obfuscator origin.js --output _worker.js \
           --compact true \
-          --identifier-names-generator hexadecimal \
-          --rename-globals true \
-          --string-array true \
-          --string-array-encoding 'base64' \
-          --string-array-threshold 0.75 \
-          --transform-object-keys true \
-          --self-defending false \
-          --simplify true
+          --simplify true \
+          --string-array false \
+          --rename-globals false \
+          --transform-object-keys false
 
       - name: 提交更改
         uses: stefanzweifel/git-auto-commit-action@v5
