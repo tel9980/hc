@@ -3,53 +3,55 @@ name: Build Obfuscate BPB Panel
 on:
   push:
     branches:
-      - main
+      - main       # 当推送到 main 分支时触发
   schedule:
-    - cron: "0 1 * * *"
+    - cron: "0 1 * * *"   # 每天 UTC 时间 1 点自动运行一次（可选）
 
 permissions:
-  contents: write
+  contents: write  # 允许工作流提交修改到仓库
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest  # 使用最新版 Ubuntu 环境
 
     steps:
       - name: Check out the code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # 拉取当前仓库代码
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v4  # 安装 Node.js
         with:
-          node-version: "latest"
+          node-version: "latest"    # 使用最新版本
 
       - name: Install dependencies
         run: |
-          npm install -g javascript-obfuscator
-          sudo apt-get install -y unzip
+          npm install -g javascript-obfuscator  # 全局安装混淆器
+          sudo apt-get install -y unzip         # 安装解压工具
 
       - name: Clean up old files
         run: |
-          rm -f worker.zip _worker.js origin.js
+          rm -f worker.zip _worker.js origin.js  # 删除旧的中间文件（确保干净）
 
       - name: Download and extract latest BPB worker
         run: |
-          wget -O worker.zip https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/download/v3.1.4/unobfuscated-worker.zip
-          unzip -o worker.zip
-          mv _worker.js origin.js
+          wget -O worker.zip https://github.com/bia-pain-bache/BPB-Worker-Panel/releases/download/v3.1.4/unobfuscated-worker.zip  # 下载未混淆的 worker
+          unzip -o worker.zip    # 解压
+          mv _worker.js origin.js  # 保存原始代码以供混淆
 
-      - name: Obfuscate BPB worker js (simplified for Cloudflare)
+      - name: Obfuscate BPB worker js (中等混淆强度，兼顾性能)
         run: |
           javascript-obfuscator origin.js --output _worker.js \
-          --compact true \
-          --simplify true \
-          --string-array false \
-          --rename-globals false \
-          --transform-object-keys false
+          --compact true \                           # 去除空格、换行等
+          --simplify true \                          # 简化表达式结构
+          --string-array true \                      # 把字符串转为数组存储
+          --rename-globals false \                   # 禁止重命名全局变量
+          --string-array-threshold 0.3 \             # 仅混淆约 30% 字符串，降低 CPU 负载
+          --self-defending false                     # 关闭自我防御代码（避免性能问题）
 
       - name: 提交更改
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           branch: main
           commit_message: ':arrow_up: update latest bpb panel'
-          commit_author: 'github-actions[bot] <github-actions[bot]@users.noreply.github.com>'
+          commit_author: 'github-actions[bot] <github-actions[bot]@users.noreply.github.com>'  # 使用 bot 身份提交
+
